@@ -132,6 +132,12 @@ test('档位门控：轻档没有控件高度 / z-index / 组件；标准档有�
   assert.ok(buildMarkdown(full).includes('无障碍对比度')); assert.ok(buildMarkdown(full).includes('变更记录'))
 })
 
+test('标准档的守卫一节指向 design-audit 的基线用法；轻档没有', () => {
+  const md = buildMarkdown(derive({ ...base, tier: 'standard' }))
+  assert.ok(md.includes('audit.mjs') && md.includes('--update-baseline') && md.includes('ds-ignore'))
+  assert.ok(!buildMarkdown(derive({ ...base, tier: 'light' })).includes('audit.mjs'))
+})
+
 test('主题：both 出两套并带 prefers-color-scheme；单主题只出一套', () => {
   const both = buildCss(derive({ ...base, theme: 'both' }))
   assert.ok(both.includes(':root[data-theme="dark"]')); assert.ok(both.includes('prefers-color-scheme: dark'))

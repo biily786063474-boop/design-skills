@@ -616,7 +616,7 @@ export function buildMarkdown(r) {
       '| 芯片 | 叠 `opacity-hover` | 叠 `opacity-active` | 焦点环 | `opacity-disabled` | — | — | `accent-soft` 底 |', '')
     L.push('## 页面版式模板', '', '组内永远小于组间。', '', '| 页面类别 | 页边距 | 区块之间 | 同组条目之间 | 组内 | 卡片内边距 | 卡片之间 |', '| --- | --- | --- | --- | --- | --- | --- |',
       ...[['窄面板 ≤480', r.margin.narrow], ['弹窗·设置页 ≥700', r.margin.dialog], ['全幅视图', r.margin.full]].map(([n, m]) => `| ${n} | ${m} | ${r.gap.section} | ${r.gap.item} | ${r.gap.group} | ${r.gap.cardPad} | ${r.gap.cardGap} |`), '')
-    L.push('## 守卫（标准档起）', '', '- 新文件里样式的字面值（颜色、字号、圆角、间距、阴影、z-index、动效时长）为零，一律引用令牌。', '- 旧文件按基线只减不增；基线记在项目的检查脚本里。', '- 例外单一来源登记，每条写理由；没登记的例外就是违规。', '')
+    L.push('## 守卫（标准档起）', '', '- 新文件里样式的字面值（颜色、字号、圆角、间距、阴影、z-index、动效时长）为零，一律引用令牌。', '- 旧文件按基线只减不增；用 `design-audit` 的基线模式：', '', '  ```bash', '  # 第一次：把现状记为基线', '  node <design-audit 目录>/scripts/audit.mjs . --tokens design-system/tokens.css --baseline design-system/.audit-baseline.json --update-baseline', '  # 之后每次检查（接进项目的检查命令或 CI）：比基线多了就退出码 1', '  node <design-audit 目录>/scripts/audit.mjs . --tokens design-system/tokens.css --baseline design-system/.audit-baseline.json', '  ```', '', '- 例外单一来源登记：在问题所在行写 `ds-ignore: 理由`，理由必填；没登记的例外就是违规。', '')
   }
   if (a.tier === 'full') {
     L.push('## 无障碍对比度（完整档）', '', '| 主题 | 配对 | 对比度 | 要求 | 结果 |', '| --- | --- | --- | --- | --- |',
@@ -708,4 +708,5 @@ function main(argv) {
   if (failed.length) { console.error(`\n有 ${failed.length} 项未通过，不要把这套值当终稿。`); process.exit(1) }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main(process.argv.slice(2))
+const isMain = (() => { try { return !!process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href } catch { return false } })()
+if (isMain) main(process.argv.slice(2))
