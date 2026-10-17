@@ -19,7 +19,7 @@ Design skills for AI coding agents (Claude Code and others), published from a pe
 
 ```bash
 node design-system-first/scripts/derive.mjs --in design-system-first/scripts/examples/web-saas.json --out design-system/ --preview
-node --test design-system-first/scripts/derive.test.mjs   # 26 个单测，含 1000+ 组合的全量扫描
+node --test design-system-first/scripts/derive.test.mjs   # 29 个单测，含 1000+ 组合与高亮度主色的全量扫描
 ```
 
 ## 审计脚本

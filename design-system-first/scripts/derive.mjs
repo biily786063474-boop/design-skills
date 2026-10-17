@@ -255,18 +255,36 @@ export function derive(rawAnchors) {
         text1: n[50], text2: n[300], text3: n[400] })
     }
     const surf = t.surface1
-    const fillPick = mode === 'light'
-      ? pickStep(R.accent, [500, 600, 700, 800, 900], WHITE, 4.5)
-      : pickStep(R.accent, [400, 300, 500, 600], surf, 3)
+    const darkText = n[950]
+    const labelContrast = (hex) => Math.max(contrast(WHITE, hex), contrast(darkText, hex))
+    // 按钮填充：你的主色优先；文字用白色（惯例）或深色，对比度都要 ≥ 4.5。
+    // 暗色下填充还要与卡片拉开 ≥ 3（亮色填充在深底上才看得见）；亮色下填充靠文字标识，不要求与白卡片拉开（亮黄按钮是常见做法）。
+    // 选法：① 主色本身白字够用 → 用它；② 白字差一点：把填充加深（最多 2 档）换白字，保持「白字按钮」的惯例；
+    //       ③ 离得远（比如亮黄）：保留主色，文字改深色；④ 都不行再取对比度最高的。
+    const fillOrder = [exactStep, ...(mode === 'light' ? [500, 600, 700, 800, 900] : [400, 300, 500, 600]).filter((x) => x !== exactStep)]
+    const whiteOk = (st) => contrast(WHITE, R.accent[st]) >= 4.5
+    const valid = (st) => labelContrast(R.accent[st]) >= 4.5 && (mode === 'light' || contrast(R.accent[st], surf) >= 3)
+    const exactIdx = STEPS.indexOf(exactStep)
+    let fillPick = null
+    if (valid(exactStep) && whiteOk(exactStep)) fillPick = { step: exactStep, ok: true }
+    if (!fillPick) {
+      const darker = STEPS.slice(exactIdx + 1, exactIdx + 3).find((st) => whiteOk(st) && valid(st))
+      if (darker !== undefined) fillPick = { step: darker, ok: true }
+    }
+    if (!fillPick && valid(exactStep)) fillPick = { step: exactStep, ok: true }
+    if (!fillPick) {
+      const st = fillOrder.find(valid)
+      fillPick = st !== undefined ? { step: st, ok: true } : { step: fillOrder.reduce((b, x) => (labelContrast(R.accent[x]) > labelContrast(R.accent[b]) ? x : b), exactStep), ok: false }
+    }
     t.accentFill = R.accent[fillPick.step]
     t.accentFillStep = fillPick.step
+    // 文字颜色：白色够用就用白色（惯例），白色不够再用深色
+    t.onAccent = contrast(WHITE, t.accentFill) >= 4.5 ? WHITE : contrast(darkText, t.accentFill) >= 4.5 ? darkText : (contrast(WHITE, t.accentFill) >= contrast(darkText, t.accentFill) ? WHITE : darkText)
     const modeName = mode === 'light' ? '亮色' : '暗色'
+    const labelWord = t.onAccent === WHITE ? '白字' : '深色字'
     notes.push(fillPick.step === exactStep
-      ? `${modeName}：你选的主色 ${a.accent} 原样用作强调填充（第 ${exactStep} 档）。`
-      : `${modeName}：你选的主色落在第 ${exactStep} 档，但为了${mode === 'light' ? '白字' : '与卡片'}的对比度，强调填充改用第 ${fillPick.step} 档（${t.accentFill}），比你选的${mode === 'light' ? '更深' : '更亮'}。`)
-    const onWhite = contrast(WHITE, t.accentFill)
-    const onBlack = contrast(n[950], t.accentFill)
-    t.onAccent = onWhite >= onBlack ? WHITE : n[950]
+      ? `${modeName}：你选的主色 ${a.accent} 原样用作强调填充（第 ${exactStep} 档），按钮上的文字用${labelWord}。`
+      : `${modeName}：你选的主色落在第 ${exactStep} 档，但为了按钮文字${mode === 'dark' ? '与卡片' : ''}的对比度，强调填充改用第 ${fillPick.step} 档（${t.accentFill}），比你选的${fillPick.step > exactStep ? '更深' : '更亮'}，按钮上的文字用${labelWord}。`)
     const hoverStep = STEPS[Math.min(STEPS.indexOf(fillPick.step) + (mode === 'light' ? 1 : -1), STEPS.length - 1)]
     t.accentHover = R.accent[hoverStep]
     const txt = pickStep(R.accent, mode === 'light' ? [500, 600, 700, 800, 900] : [300, 400, 200], surf, 4.5)
@@ -278,16 +296,23 @@ export function derive(rawAnchors) {
       t[`${k}Soft`] = mode === 'light' ? R[k][100] : R[k][950]
       t[`${k}Step`] = p.step
     }
-    t.focusRing = t.accentFill
+    // 没有文字的强调元素（开关、进度条、复选框、焦点环）靠颜色本身被看见：要与卡片和背景都拉开 ≥ 3
+    const uiOrder = [fillPick.step, ...(mode === 'light' ? [500, 600, 700, 800, 900] : [400, 300, 500, 600]).filter((x) => x !== fillPick.step)]
+    const uiContrast = (hex) => Math.min(contrast(hex, t.surface1), contrast(hex, t.bg))
+    let uiStep = uiOrder.find((st) => uiContrast(R.accent[st]) >= 3)
+    if (uiStep === undefined) uiStep = uiOrder.reduce((b, st) => (uiContrast(R.accent[st]) > uiContrast(R.accent[b]) ? st : b), uiOrder[0])
+    t.accentUi = R.accent[uiStep]
+    if (uiStep !== fillPick.step) notes.push(`${modeName}：按钮填充保留了你的主色；开关、进度条、焦点环这类没有文字的强调元素改用第 ${uiStep} 档（${t.accentUi}），因为主色与卡片的对比度不到 3:1，单靠颜色看不清。`)
+    t.focusRing = t.accentUi
     const pairs = [
       ['正文 text-1 / 背景', t.text1, t.bg, 7],
       ['次要 text-2 / 背景', t.text2, t.bg, 4.5],
       ['说明 text-3 / 背景', t.text3, t.bg, 4.5],
       ['正文 text-1 / 卡片', t.text1, t.surface1, 7],
       ['说明 text-3 / 卡片', t.text3, t.surface1, 4.5],
-      ['强调色上的文字 / 强调填充', t.onAccent, t.accentFill, 4.5],
+      ['按钮文字 / 强调填充', t.onAccent, t.accentFill, 4.5],
       ['强调文字色 / 卡片', t.accentText, t.surface1, 4.5],
-      ['强调填充 / 卡片（界面元素）', t.accentFill, t.surface1, 3],
+      ['强调界面元素色（开关、进度条）/ 卡片', t.accentUi, t.surface1, 3],
       ['焦点环 / 背景（界面元素）', t.focusRing, t.bg, 3],
       ['成功 / 卡片', t.success, t.surface1, 4.5],
       ['警告 / 卡片', t.warning, t.surface1, 4.5],
@@ -461,6 +486,7 @@ function buildTokens(r) {
     c['text-3'] = pick('t3', t.text3, alias('neutral', t.text3))
     c.accent = pick('a', t.accentFill, alias('accent', t.accentFill))
     c['accent-hover'] = pick('ah', t.accentHover, alias('accent', t.accentHover))
+    c['accent-ui'] = pick('au', t.accentUi, alias('accent', t.accentUi))
     c['accent-text'] = pick('at', t.accentText, alias('accent', t.accentText))
     c['accent-soft'] = pick('as', t.accentSoft, alias('accent', t.accentSoft))
     c['on-accent'] = pick('oa', t.onAccent, t.onAccent === '#ffffff' ? ref('color.white') : alias('neutral', t.onAccent))
@@ -529,7 +555,7 @@ function themeVars(r, mode) {
     '--color-bg': t.bg, '--color-surface-1': t.surface1, '--color-surface-2': t.surface2, '--color-surface-3': t.surface3,
     '--color-border': t.border, '--color-border-strong': t.borderStrong,
     '--color-text-1': t.text1, '--color-text-2': t.text2, '--color-text-3': t.text3,
-    '--color-accent': t.accentFill, '--color-accent-hover': t.accentHover, '--color-accent-text': t.accentText,
+    '--color-accent': t.accentFill, '--color-accent-hover': t.accentHover, '--color-accent-ui': t.accentUi, '--color-accent-text': t.accentText,
     '--color-accent-soft': t.accentSoft, '--color-on-accent': t.onAccent, '--color-focus-ring': t.focusRing,
   }
   for (const k of Object.keys(SEMANTIC_HUE)) { v[`--color-${k}`] = t[k]; v[`--color-${k}-soft`] = t[`${k}Soft`] }
@@ -583,7 +609,7 @@ export function buildMarkdown(r) {
   for (const [mode, t] of Object.entries(r.themes)) {
     L.push(`### ${mode === 'light' ? '亮色' : '暗色'}`, '', '| 令牌 | 值 |', '| --- | --- |',
       ...[['bg', t.bg], ['surface-1', t.surface1], ['surface-2', t.surface2], ['surface-3', t.surface3], ['border', t.border], ['text-1', t.text1], ['text-2', t.text2], ['text-3', t.text3],
-        ['accent', t.accentFill], ['accent-text', t.accentText], ['on-accent', t.onAccent], ['success', t.success], ['warning', t.warning], ['danger', t.danger], ['info', t.info]]
+        ['accent', t.accentFill], ['accent-ui', t.accentUi], ['accent-text', t.accentText], ['on-accent', t.onAccent], ['success', t.success], ['warning', t.warning], ['danger', t.danger], ['info', t.info]]
         .map(([k, v]) => `| \`--color-${k}\` | \`${v}\` |`), '')
   }
   L.push('## 阴影与层级', '', '亮色靠投影分层；暗色主要靠表面明度分层，投影只辅助。', '', '| 令牌 | 亮色 | 暗色 |', '| --- | --- | --- |',

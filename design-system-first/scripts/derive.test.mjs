@@ -189,13 +189,50 @@ test('中性色：follow 带一点主色色相，none 是纯灰', () => {
   assert.ok(!(fr === fg && fg === fb), `follow 应带色相：${f}`)
 })
 
-test('品牌色原样出现在色阶里；为对比度换档时要有说明', () => {
+test('品牌色原样出现在色阶里；换档时要有说明、深浅描述要对', () => {
   const r = derive({ ...base, accent: '#3b6fe0' })
   assert.ok(Object.values(r.ramps.accent).includes('#3b6fe0'), '主色应原样出现在色阶里')
   assert.ok(r.notes.length === 2 && r.notes.every((n) => n.includes('主色')))
-  const yellow = derive({ ...base, accent: '#ffd43b', theme: 'light' })
-  assert.ok(yellow.notes[0].includes('改用'), '浅黄主色配白字不达标，必须说明换了档：' + yellow.notes[0])
-  assert.ok(buildMarkdown(yellow).includes('主色说明'))
+  assert.ok(r.notes.every((n) => n.includes('原样用作强调填充')), '蓝色白字够用，亮暗都该原样用')
+  const ios = derive({ ...base, accent: '#0a84ff' })
+  for (const n of ios.notes) { assert.ok(n.includes('改用'), n); assert.ok(n.includes('更深') && !n.includes('更亮'), '改用的是更大的档位，必须说「更深」：' + n) }
+})
+
+test('亮黄这类浅色品牌色：按钮保留品牌色、文字用深色、无文字的强调元素另用深一档，全部校验通过', () => {
+  const r = derive({ ...base, accent: '#ffd43b', theme: 'light' })
+  const t = r.themes.light
+  assert.equal(t.accentFill, '#ffd43b', '按钮填充必须就是品牌黄')
+  assert.ok(contrast(t.onAccent, t.accentFill) >= 4.5, '按钮上的文字对比度要达标')
+  assert.notEqual(t.onAccent, '#ffffff', '亮黄配白字不达标，文字应改深色')
+  assert.notEqual(t.accentUi, t.accentFill, '开关、进度条这类靠颜色识别的元素不能直接用亮黄')
+  assert.ok(contrast(t.accentUi, t.surface1) >= 3 && contrast(t.accentUi, t.bg) >= 3, 'accent-ui 与卡片、背景都要 ≥ 3')
+  assert.equal(t.focusRing, t.accentUi, '焦点环用 accent-ui，不能是看不清的亮黄')
+  assert.deepEqual(failedOf(r), [])
+  assert.ok(r.notes.some((n) => n.includes('原样用作强调填充') && n.includes('深色字')))
+  assert.ok(r.notes.some((n) => n.includes('没有文字的强调元素')))
+  assert.ok(buildCss(r).includes('--color-accent-ui'))
+  assert.ok(buildMarkdown(r).includes('accent-ui'))
+  assert.ok(r.tokens.semantic.theme.light.color['accent-ui'])
+})
+
+test('白字差一点的主色：最多加深 2 档换白字，不改成深色字（保持白字按钮的惯例）', () => {
+  for (const accent of ['#0a84ff', '#e8590c', '#e03131']) {
+    const r = derive({ ...base, accent, theme: 'light' })
+    const t = r.themes.light
+    assert.equal(t.onAccent, '#ffffff', `${accent} 应是白字按钮`)
+    assert.ok(contrast('#ffffff', t.accentFill) >= 4.5, accent)
+    assert.ok(STEPS.indexOf(t.accentFillStep) - STEPS.indexOf(r.exactStep) <= 2, `${accent} 加深不超过 2 档`)
+  }
+})
+
+test('高亮度主色全量扫描（各色相 × 亮暗 × 三档 × 触屏平台）校验全部通过', () => {
+  const bad = []
+  for (const L of [0.97, 0.9, 0.82, 0.74]) for (let hue = 0; hue < 360; hue += 20) for (const theme of ['light', 'dark', 'both']) for (const platform of ['web', 'ios']) {
+    const accent = oklchToHex(L, 0.16, hue)
+    const f = failedOf(derive({ ...base, accent, theme, platform }))
+    if (f.length) bad.push(`${accent}/${theme}/${platform} → ${f.slice(0, 2).join(' | ')}`)
+  }
+  assert.deepEqual(bad.slice(0, 8), [], `共 ${bad.length} 组未通过`)
 })
 
 test('色阶：11 档、亮度单调递减', () => {
