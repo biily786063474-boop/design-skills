@@ -38,7 +38,7 @@ description: 开始规划任何 UI（新项目、新应用、改版、新增一�
 6. **Q5 形状与动效**（选择卡）：锐利利落 / 适中克制 / 圆润柔和。
 7. **推导**：`scripts/derive.mjs` 一次算出全部维度（字阶、间距、控件高度、圆角、颜色、阴影、动效、层级、状态矩阵、页面版式），并自动校验；任何一项不达标就报错，不继续。
 8. **Q6 终确认**（确认卡 + 预览页）：每个值旁标出处，「声明的假设」单独列出；用户要改单个值就写进例外登记（必须写理由），重新推导再确认。
-9. **落盘并接守卫**：`design-system/` 下生成 `tokens.json`（DTCG 三层）、`tokens.css`、`DESIGN-SYSTEM.md`、`DECISIONS.md`；标准档起把「新文件字面值为零、旧文件只减不增」接进项目的检查命令——用 `design-audit` 的基线模式（`audit.mjs --baseline … --update-baseline`），它就是守卫。
+9. **落盘并接守卫**：`design-system/` 下生成 `tokens.json`（DTCG 三层）、`tokens.css`、`DESIGN-SYSTEM.md`、`DECISIONS.md`；标准档起把「新文件字面值为零、旧文件只减不增」接进项目的检查命令——用 `design-audit` 的基线模式（`audit.mjs --baseline … --update-baseline`），它就是守卫；把单文件零依赖的 `audit.mjs` 拷进项目再接检查命令，别让项目的 CI 依赖外部安装路径。
 10. **验收用探针量真实值，不读 CSS**：量相邻元素的真实空隙、真实计算样式，多语言 × 暗亮各一遍；有数据 / 空状态都要开。详见 §验收。
 
 **铁律**：一次一张卡，摆卡后直接结束这一轮；每个选项带推荐理由；每张卡的回应立即追加到 `DECISIONS.md`，对话中断后从那里恢复；没问过的维度不装作问过。卡片脚本、推荐规则、恢复与降级见 `references/flow.md`；推导规则与校验清单见 `references/derivation.md`；气质候选见 `references/moods.md`。

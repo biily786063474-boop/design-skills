@@ -50,7 +50,7 @@ node <skill 目录>/scripts/audit.mjs . --baseline design-system/.audit-baseline
 node <skill 目录>/scripts/audit.mjs . --baseline design-system/.audit-baseline.json --update-baseline
 ```
 
-把第二条接进项目的检查命令或 CI。基线按「文件 × 规则」记数量，所以旧文件里的老问题不挡路，新文件和新增的问题会被拦下。
+**先把 `audit.mjs` 拷进项目**（单文件、零依赖，例如 `scripts/design-audit.mjs`），上面命令里的脚本路径就换成它，这样守卫跑在项目自己的检查命令或 CI 里，不依赖外部安装位置。把第二条接进检查命令。基线按「文件 × 规则」记数量，所以旧文件里的老问题不挡路，新文件和新增的问题会被拦下。
 
 ## 例外登记
 
