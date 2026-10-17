@@ -1,0 +1,73 @@
+/* 设计系统令牌骨架（design-system-first）。按项目气质改值，但每一组维度都要有；删一组要在规范里写明「有意省略」。
+   命名约定：<维度>-<档位>。值只许落在阶梯上；半像素、奇数 px 不进阶梯。 */
+:root {
+  /* ── 颜色：表面层级（越浮越亮；暗色）──────────────────────────── */
+  --bg: #0d0d0d;
+  --s-1: #171717;   /* 贴在底上：侧栏、工具条 */
+  --s-2: #1c1c1c;   /* 卡片、面板 */
+  --s-3: #212121;   /* 浮层：菜单、下拉、弹窗 */
+
+  /* ── 颜色：文字三级 + 强调 + 语义 ───────────────────────────────── */
+  --t-1: #f5f5f5;
+  --t-2: #a3a3a3;
+  --t-3: #737373;
+  --accent: #6c8cff;
+  --on-accent: #0b0b0b;
+  --sem-ok: #6ee7b7;
+  --sem-warn: #fcd34d;
+  --sem-danger: #fda4af;
+  --sem-info: #7dd3fc;
+
+  /* ── 字体 ─────────────────────────────────────────────────────── */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --fs-2xs: 10px; --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px; --fs-lg: 15px; --fs-xl: 18px; --fs-2xl: 23px;
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600;
+  --lh-tight: 1.25;   /* 标题 */
+  --lh-snug: 1.4;     /* 紧凑：列表行、芯片 */
+  --lh-body: 1.6;     /* 正文 */
+  --ls-eyebrow: 0.12em;
+  --ls-display: -0.02em;
+
+  /* ── 形状 ─────────────────────────────────────────────────────── */
+  --radius-xs: 4px; --radius-sm: 7px; --radius-md: 10px; --radius-card-compact: 12px;
+  --radius-card: 16px; --radius-lg: 20px; --radius-xl: 26px;   /* 胶囊 999px、圆形 50% 直接写 */
+  --bw-1: 1px; --bw-2: 2px;
+
+  /* ── 间距（2px 栅格，只许偶数）──────────────────────────────────── */
+  --sp-0: 0; --sp-1: 2px; --sp-2: 4px; --sp-3: 6px; --sp-4: 8px; --sp-5: 10px;
+  --sp-6: 12px; --sp-7: 16px; --sp-8: 20px; --sp-9: 24px; --sp-10: 32px;
+  --gap-tight: var(--sp-2); --gap-item: var(--sp-4); --gap-group: var(--sp-7); --gap-section: var(--sp-9);
+
+  /* ── 页面版式模板（按页面宽度分三类，值按项目调）────────────────── */
+  --panel-pad-x: 12px; --panel-pad-top: 8px; --panel-pad-bottom: 12px;   /* 窄面板 ≤480 */
+  --page-pad-x: 24px; --page-pad-y: 24px;                                  /* 弹窗 / 设置页 ≥700 */
+  --view-pad-x: 16px; --view-pad-top: 12px; --view-pad-bottom: 16px;      /* 全幅视图 */
+
+  /* ── 控件 / 图标 ──────────────────────────────────────────────── */
+  --ctl-h-sm: 24px; --ctl-h-md: 28px; --ctl-h-lg: 34px;
+  --icon-sm: 16px; --icon-md: 20px; --icon-lg: 24px;
+
+  /* ── 层级：阴影 + z-index（命名层，间隔 10 方便中间插）──────────── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.2);
+  --shadow-md: 0 4px 14px rgba(0,0,0,.28);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.4);
+  --z-base: 0; --z-raised: 10; --z-sticky: 20; --z-dropdown: 30; --z-overlay: 40; --z-modal: 50; --z-toast: 60; --z-tooltip: 70;
+
+  /* ── 状态：透明度 + 焦点环 ───────────────────────────────────── */
+  --op-disabled: .4; --op-muted: .6; --op-hover-wash: .06;
+  --focus-ring: 2px solid var(--accent); --focus-offset: 2px;
+
+  /* ── 动效 ─────────────────────────────────────────────────────── */
+  --dur-fast: .15s; --dur-med: .24s; --dur-slow: .35s; --dur-xslow: .5s;   /* <100ms 的跟手反馈不进阶梯 */
+  --ease-out: cubic-bezier(.32, .72, 0, 1);       /* 不过冲的减速 */
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1); /* 轻弹，只给小控件 */
+  --hover-show: 120ms; --hover-leave: 150ms;
+
+  /* ── 断点（只用这几个；容器查询另算）────────────────────────────── */
+  /* @media (max-width: 580px) 窄  ·  (max-width: 850px) 中  ·  (min-width: 1200px) 宽 —— CSS 变量不能用在 @media 里，写在注释里约定 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0s; --dur-med: 0s; --dur-slow: 0s; --dur-xslow: 0s; }
+}
