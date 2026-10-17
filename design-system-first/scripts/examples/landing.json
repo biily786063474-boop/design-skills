@@ -1,0 +1,2 @@
+{ "name": "落地页示例", "platform": "web", "tier": "light", "theme": "light", "density": "comfortable", "shape": "soft",
+  "accent": "#e8590c", "neutral": "follow", "assumptions": ["一次性活动页，不做暗色"] }

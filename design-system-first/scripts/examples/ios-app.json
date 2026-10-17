@@ -1,0 +1,2 @@
+{ "name": "iOS 工具 App", "platform": "ios", "tier": "full", "theme": "both", "density": "standard", "shape": "soft",
+  "accent": "#0a84ff", "neutral": "none", "assumptions": ["系统字体与动态字体由原生控件接管"] }

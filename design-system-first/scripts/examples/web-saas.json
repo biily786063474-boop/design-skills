@@ -1,0 +1,2 @@
+{ "name": "Acme 后台", "platform": "web", "tier": "standard", "theme": "both", "density": "standard", "shape": "balanced",
+  "accent": "#3b6fe0", "neutral": "follow", "assumptions": ["默认只支持中文界面", "未做打印样式"] }
